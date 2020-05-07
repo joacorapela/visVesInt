@@ -1,1 +1,8 @@
 *~
+results/*
+figures/*
+old/*
+.RData
+.Rhistory
+todo.txt
+toRsync
