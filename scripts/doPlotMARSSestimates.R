@@ -1,14 +1,19 @@
 
+require(MARSS)
 require(ggplot2)
 require(plotly)
 require(reshape2)
-source("~/dev/learning/kalmanFilter/code/src/plotTrueInitialAndEstimatedMatrices.R")
-source("~/dev/learning/kalmanFilter/code/src/plotTrueInitialAndEstimatedVectors.R")
-source("circleFun.R")
+source("../src/utils/signalProcessing/computeNMSE.R")
+source("../src/utils/kalmanFilter/buildVelocityInputs.R")
+source("../src/plot/kalmanFilter/getPlotTrueInitialAndEstimatedMatrices.R")
+source("../src/plot/kalmanFilter/getPlotTrueInitialAndEstimatedVectors.R")
+source("../src/utils/plot/circleFun.R")
 
 processAll <- function() {
-    nFactors <- 6
+    dimLat <- 8
     sRate <- 10
+    stateInputMemorySecs <- NaN
+    obsInputMemorySecs <- 0.1
     exptN <- 6
     cellN <- NA
     trialN <- NA
@@ -24,55 +29,107 @@ processAll <- function() {
     # cellType <- "Wide"
 
     conditionNoBlanks <- gsub(" ", "_", condition)
+    conditionNoBlanks <- gsub("_\\+_", "_", conditionNoBlanks)
 
-    resultsFilenamePattern <- "results/expt%02d_MARSS_condition%s_nLat%02d.RData"
-    resultsFilename <- sprintf(resultsFilenamePattern, exptN, conditionNoBlanks, nFactors)
+    resultsFilenamePattern <- "results/expt%02d/expt%02d_MARSS_condition%s_nLat%02d_stateInputMemory%.02f_obsInputMemory%.02f.RData"
+    resultsFilename <- sprintf(resultsFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs)
 
     results <- get(load(resultsFilename))
     kem <- results$kem
-    kfRes <- results$kfRes
-    kfRes0 <- results$kfRes0
-    zs <- results$zs
+    velocitiesDataBlock <- results$velocitiesDataBlock
+    initialConds <- list(A=matrix(kem$start$B, ncol=dimLat), C=matrix(kem$start$Z, ncol=dimLat), sigmaDiag=as.vector(kem$start$R))
+    kfRes <- MARSSkf(kem)
+    kem0 <- kem
+    kem0$par <- kem0$start
+    kfRes0 <- MARSSkf(kem0)
+
+    firingRatesDataBlock <- results$firingRatesDataBlock
     trialStartTimes <- results$trialStartTimes
 
-    conditionNoBlanks <- gsub(" ", "_", condition)
+    dimObs <- nrow(firingRatesDataBlock)
+    nObs <- ncol(firingRatesDataBlock)
 
-    dimLat <- nFactors
-    dimObs <- nrow(zs)
-    nObs <- ncol(zs)
-
-    figFilenamePattern <- "figures//expt%02d//exp%02d_condition%s_nLat%02d_MARSS_%s.html"
+    figFilenamePattern <- "figures//expt%02d//expt%02d_condition%s_nLat%02d_stateInputMemory%.02f_obsInputMemory%.02f_MARSS_%s.%s"
 
     # begin plot true params
-    AFigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "A")
-    plotTrueInitialAndEstimatedMatrices(initial=A, estimated=matrix(coef(kem)$B, nrow=dimLat), title="A", figFilename=AFigFilename)
+
+    APNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "A", "png")
+    AHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "A", "html")
+    p <- getPlotTrueInitialAndEstimatedMatrices(initial=initialConds$A, estimated=matrix(coef(kem)$B, nrow=dimLat), title="A")
+    ggsave(plot=p, filename=APNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(AHTMLFilename)), basename(AHTMLFilename)))
     #
-    uFigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "u")
-    plotTrueInitialAndEstimatedVectors(estimated=matrix(coef(kem)$U, nrow=dimLat), title="u", figFilename=uFigFilename)
+    uPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "u", "png")
+    uHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "u", "html")
+    p <- getPlotTrueInitialAndEstimatedVectors(estimated=matrix(coef(kem)$U, nrow=dimLat), title="u", xlab="Latent Index")
+    ggsave(plot=p, filename=uPNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(uHTMLFilename)), basename(uHTMLFilename)))
     #
-    CFigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "C")
-    plotTrueInitialAndEstimatedMatrices(initial=matrix(kem$start$Z, ncol=nFactors), estimated=matrix(coef(kem)$Z, nrow=dimObs), title="C", figFilename=CFigFilename)
+    CPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "C", "png")
+    CHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "C", "html")
+    p <- getPlotTrueInitialAndEstimatedMatrices(initial=t(initialConds$C), estimated=t(matrix(coef(kem)$Z, nrow=dimObs)), title="C", xlab="Latent Index")
+    ggsave(plot=p, filename=CPNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(CHTMLFilename)), basename(CHTMLFilename)))
     #
-    aFigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "a")
-    plotTrueInitialAndEstimatedVectors(estimated=matrix(coef(kem)$A, nrow=dimObs), title="a", figFilename=aFigFilename)
+    aPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "a", "png")
+    aHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "a", "html")
+    p <- getPlotTrueInitialAndEstimatedVectors(estimated=matrix(coef(kem)$A, nrow=dimObs), title="a", xlab="Neuron Index")
+    ggsave(plot=p, filename=aPNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(aHTMLFilename)), basename(aHTMLFilename)))
     #
-    GammaFigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "Gamma")
-    plotTrueInitialAndEstimatedVectors(estimated=coef(kem)$Q, title="Gamma Variance", figFilename=GammaFigFilename)
+    GammaPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Gamma", "png")
+    GammaHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Gamma", "html")
+    p <- getPlotTrueInitialAndEstimatedVectors(estimated=coef(kem)$Q, title="Gamma Variance")
+    ggsave(plot=p, filename=GammaPNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(GammaHTMLFilename)), basename(GammaHTMLFilename)))
     #
-    SigmaFigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "Sigma")
-    plotTrueInitialAndEstimatedVectors(initial=kem$start$R, estimated=coef(kem)$R, title="Sigma Diagonal", figFilename=SigmaFigFilename)
+    SigmaPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Sigma", "png")
+    SigmaHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Sigma", "html")
+    p <- getPlotTrueInitialAndEstimatedVectors(initial=initialConds$sigmaDiag, estimated=coef(kem)$R, title="Sigma Diagonal")
+    ggsave(plot=p, filename=SigmaPNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(SigmaHTMLFilename)), basename(SigmaHTMLFilename)))
     #
-    x0FigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "x0")
-    plotTrueInitialAndEstimatedVectors(estimated=coef(kem)$x0, title="x0", figFilename=x0FigFilename)
+    x0PNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "x0", "png")
+    x0HTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "x0", "html")
+    p <- getPlotTrueInitialAndEstimatedVectors(estimated=coef(kem)$x0, title="x0", xlab="Latent Index")
+    ggsave(plot=p, filename=x0PNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(x0HTMLFilename)), basename(x0HTMLFilename)))
     #
-    V0FigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "V00")
-    plotTrueInitialAndEstimatedVectors(estimated=coef(kem)$x0, title="V00", figFilename=x0FigFilename)
+    V0PNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "V0", "png")
+    V0HTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "V0", "html")
+    p <- getPlotTrueInitialAndEstimatedVectors(estimated=coef(kem)$V0, title="V0")
+    ggsave(plot=p, filename=V0PNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(V0HTMLFilename)), basename(V0HTMLFilename)))
+    #
+    if(!is.nan(stateInputMemorySecs)) {
+        CInputPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "CInput", "png")
+        CInputHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "CInput", "html")
+        p <- getPlotTrueInitialAndEstimatedMatrices(estimated=t(matrix(coef(kem)$C), nrow=dimObs), title="C Input")
+        ggsave(plot=p, filename=CInputPNGFilename)
+        pPlotly <- ggplotly(p)
+        htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(CInputHTMLFilename)), basename(CInputHTMLFilename)))
+    }
+    if(!is.nan(obsInputMemorySecs)) {
+        DInputPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "DInput", "png")
+        DInputHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "DInput", "html")
+        p <- getPlotTrueInitialAndEstimatedMatrices(estimated=t(matrix(coef(kem)$D, nrow=dimObs)), title="D Input")
+        ggsave(plot=p, filename=DInputPNGFilename)
+        pPlotly <- ggplotly(p)
+        htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(DInputHTMLFilename)), basename(DInputHTMLFilename)))
+    }
     # end plot true params
 
     # begin plot state dynamics spectrum
-    A <- matrix(kem$start$B, ncol=nFactors)
+    A <- matrix(kem$start$B, ncol=dimLat)
     dfCircle <- circleFun(c(0,0), radius=1, npoints = 200)
-    #geom_path will do open circles, geom_polygon will do filled circles
     eigvals <- eigen(x=A, symmetric=FALSE, only.values=TRUE)$values
     dfEigvals <- data.frame(x=Re(eigvals), y=Im(eigvals))
     p <- ggplot()
@@ -83,16 +140,28 @@ processAll <- function() {
     p <- p + xlab("Real")
     p <- p + ylab("Imaginary")
     p <- p + theme(legend.title = element_blank())
-    p <- ggplotly(p)
-    AeigenFigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "Aeigen")
-    htmlwidgets::saveWidget(as_widget(p), file.path(normalizePath(dirname(AeigenFigFilename)), basename(AeigenFigFilename)))
+    AeigenPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Aeigen", "png")
+    AeigenHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Aeigen", "html")
+    ggsave(plot=p, filename=AeigenPNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(AeigenHTMLFilename)), basename(AeigenHTMLFilename)))
     # end plot state dynamics spectrum
 
     # begin plot predicted observations
 
     # begin compute one-lag ahead observation predictions stats
-    Z <- matrix(coef(kem)$Z, ncol=dimLat)
-    ytt1 <- Z%*%kfRes$xtt1+as.numeric(coef(kem)$A)
+    if(!is.nan(obsInputMemorySecs)) {
+        obsInputs <- buildVelocityInputs(velocities=as.numeric(velocitiesDataBlock[1,]), inputMemorySecs=obsInputMemorySecs, sRate=sRate)
+    } else {
+        obsInputs <- NA
+    }
+    Z <- matrix(coef(kem)$Z, nrow=dimObs)
+    D <- matrix(coef(kem)$D, nrow=dimObs)
+    if(!is.nan(obsInputMemorySecs)) {
+        ytt1 <- Z%*%kfRes$xtt1+as.numeric(coef(kem)$A)+D%*%obsInputs
+    } else {
+        ytt1 <- Z%*%kfRes$xtt1+as.numeric(coef(kem)$A)
+    }
     Wtt1 <- array(NA, dim=c(dimObs, dimObs, nObs))
     if(kem$call$model$R=="diagonal and unequal") {
         R <- diag(coef(kem)$R)
@@ -105,7 +174,7 @@ processAll <- function() {
     # end compute one-lag ahead observation predictions stats
 
     for(i in 1:dimObs) {
-        df <- data.frame(time=(1:ncol(ytt1))/sRate, predMean=ytt1[i,], predMeanLower=ytt1[i,]-1.96*sqrt(Wtt1[i,i,]), predMeanUpper=ytt1[i,]+1.96*sqrt(Wtt1[i,i,]), observation=as.numeric(zs[i,]))
+        df <- data.frame(time=(1:ncol(ytt1))/sRate, predMean=ytt1[i,], predMeanLower=ytt1[i,]-1.96*sqrt(Wtt1[i,i,]), predMeanUpper=ytt1[i,]+1.96*sqrt(Wtt1[i,i,]), observation=as.numeric(firingRatesDataBlock[i,]))
         p <- ggplot(data=df, mapping=aes(x=time))
         p <- p + geom_line(aes(y=predMean, col="prediction"))
         p <- p + geom_point(aes(y=observation, col="observation"))
@@ -114,25 +183,27 @@ processAll <- function() {
         p <- p + geom_vline(xintercept=trialStartTimes, linetype="dotted")
         p <- p + xlab("Time (sec)")
         p <- p + ylab("Square-Root Transformed Firing Rate")
-        p <- p + ggtitle(rownames(zs)[i])
+        p <- p + ggtitle(rownames(firingRatesDataBlock)[i])
         p <- p + theme(legend.title = element_blank())
-        p <- ggplotly(p)
-        suffix <- sprintf("pred%s", rownames(zs)[i])
-        predFigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, suffix)
-        htmlwidgets::saveWidget(as_widget(p), file.path(normalizePath(dirname(predFigFilename)), basename(predFigFilename)))
+        suffix <- sprintf("pred%s", rownames(firingRatesDataBlock)[i])
+        predPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, suffix, "png")
+        predHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, suffix, "html")
+        ggsave(plot=p, filename=predPNGFilename)
+        pPlotly <- ggplotly(p)
+        htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(predHTMLFilename)), basename(predHTMLFilename)))
         # print(p)
     }
     # end plot predicted observations
 
     # begin compute nmses
     nmse <- array(rep(NA, dimObs))
-    rownames(nmse) <- rownames(zs)
+    rownames(nmse) <- rownames(firingRatesDataBlock)
     for(i in 1:dimObs) {
-        zsi <- as.numeric(zs[i,])
-        nmse[i] <- mean((ytt1[i,]-zsi)^2)/var(zsi)
+        firingRatesDataBlocki <- as.numeric(firingRatesDataBlock[i,])
+        nmse[i] <- mean((ytt1[i,]-firingRatesDataBlocki)^2)/var(firingRatesDataBlocki)
     }
     # end compute nmses
-
+    #
     # begin plot nmses
     sortRes <- sort(nmse, index.return=TRUE)
     sortedNMSE <- sortRes$x
@@ -143,9 +214,11 @@ processAll <- function() {
     p <- p + ylab("NMSE")
     p <- p + xlab("")
     p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-    p <- ggplotly(p)
-    predFigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "NMSE")
-    htmlwidgets::saveWidget(as_widget(p), file.path(normalizePath(dirname(predFigFilename)), basename(predFigFilename)))
+    nmsePNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "NMSE", "png")
+    nmseHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "NMSE", "html")
+    ggsave(plot=p, filename=nmsePNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(nmseHTMLFilename)), basename(nmseHTMLFilename)))
     # end plot nmses
 
     # begin plot latents
@@ -183,10 +256,11 @@ processAll <- function() {
     p <- p + ylab("Kalman Smoother State Estimate")
     p <- p + xlab("Time")
     p <- p + theme(legend.title = element_blank())
-    p <- ggplotly(p)
-    latentsFigFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, nFactors, "Latents")
-    htmlwidgets::saveWidget(as_widget(p), file.path(normalizePath(dirname(latentsFigFilename)), basename(latentsFigFilename)))
-    # print(p)
+    latentsPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Latents", "png")
+    latentsHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Latents", "html")
+    ggsave(plot=p, filename=latentsPNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(latentsHTMLFilename)), basename(latentsHTMLFilename)))
     # end plot latents
 
     browser()
