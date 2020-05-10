@@ -2,6 +2,12 @@
 scripts/results/*
 scripts/figures/*
 scripts/old/*
+scripts/doAddVelocitiesDataBlockToResults.R*
+doc/expt06/*.log
+doc/expt06/*.aux
+doc/expt06/*.pdf
+doc/expt06/*.lof
+doc/expt06/*.out
 .RData
 .Rhistory
 todo.txt
