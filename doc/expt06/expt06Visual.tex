@@ -1,0 +1,206 @@
+
+\def\exptN{06}
+\def\nNeurons{16}
+\def\condition{Visual}
+\def\conditionNoEscape{Visual}
+\def\nLat{07}
+\def\stateInputMemory{NaN}
+\def\obsInputMemory{0.20}
+
+\newdimen\figsWidth
+\figsWidth=6in
+\newdimen\twoFigsWidth
+\twoFigsWidth=3.5in
+
+\documentclass[12 pt]{article}  %
+
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage[hypertexnames=true,colorlinks=true,breaklinks]{hyperref}
+\usepackage{tikz}
+\usepackage{grffile}
+\usepackage{siunitx}
+\usepackage[margin=0.5in]{geometry}
+
+\def\twodigits#1{%
+  \ifnum#1<10 0\fi
+  \number#1}
+
+\title{Kalman Filter Analysis for Experiment {\exptN} and Condition {\condition}}
+
+\author{Joaquin Rapela}
+
+\begin{document}
+
+\maketitle
+
+\listoffigures
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _MARSS_GOFselectionNLat.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _MARSS_GOFselectionNLat.png}}
+            \caption{AIC curves used to select the number of latents. Click on the figure to open the interactive version.}
+        \label{fig:dimLatAICCurves}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _MARSS_GOFselectionLenObsMem.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _MARSS_GOFselectionLenObsMem.png}}
+            \caption{AIC curves used to select the length of the observations speed memory. Click on the figure to open the interactive version.}
+        \label{fig:obsMemoryAICCurves}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_Latents.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_Latents.png}}
+            \caption{Estimated latents using the Kalman smoother (i.e., $P(x_n|y_1,\ldots,y_N)$). Click on the figure to open the interactive version.}
+        \label{fig:latents}
+    \end{center}
+\end{figure}
+
+\foreach \n in {1,...,\nNeurons} {
+    \begin{figure}
+        \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN /tunningCurveExpt\exptN/expt\exptN Condition\conditionNoEscape Cell\twodigits{\n} .html}{\includegraphics[width=\twoFigsWidth]{../../scripts/figures/expt\exptN /tunningCurveExpt\exptN Condition\conditionNoEscape Cell\twodigits{\n} .png}}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_predExpt\exptN Cell\twodigits{\n} .html}{\includegraphics[width=\twoFigsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_predExpt\exptN Cell\twodigits{\n} .png}}
+                \caption{Left: trial-averaged squared-root transformed firing rates. Right: one-step-ahead prediction of cell \twodigits{\n} \ response (i.e., $P(y_n|y_1,\ldots,y_{n-1}, s_n, \ldots, s_{n-L})$). Click on the figures to open the interactive version.}
+            \label{fig:predictionsCell\twodigits{\n}}
+        \end{center}
+    \end{figure}
+}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_NMSE.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_NMSE.png}}
+            \caption{Normalized MSE of predictions. Click on the figure to open the interactive version.}
+        \label{fig:NMSE}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_Beigen.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_Beigen.png}}
+            \caption{Eigenvalues of the state transition matrix B. Click on the figure to open the interactive version.}
+        \label{fig:Beigen}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_B.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_B.png}}
+            \caption{Columns of the state transition matrix B. Click on the figure to open the interactive version.}
+        \label{fig:B}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_u.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_u.png}}
+            \caption{State drift vector u. Click on the figure to open the interactive version.}
+        \label{fig:u}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_Q.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_Q.png}}
+            \caption{State noise variance. Click on the figure to open the interactive version.}
+        \label{fig:Q}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_Z.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_Z.png}}
+            \caption{Columns of the observation matrix Z. Click on the figure to open the interactive version.}
+        \label{fig:Z}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_a.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_a.png}}
+            \caption{Observation constant term a. Click on the figure to open the interactive version.}
+        \label{fig:a}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_D.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_D.png}}
+            \caption{Rows of the observation input matrix D. Click on the figure to open the interactive version.}
+        \label{fig:D}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_R.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _condition\conditionNoEscape _nLat\nLat _stateInputMemory\stateInputMemory _obsInputMemory\obsInputMemory _MARSS_R.png}}
+            \caption{Diagonal of the diagonal observations covariance matrix.}
+        \label{fig:R}
+    \end{center}
+\end{figure}
+
+\begin{comment}
+
+\begin{figure}
+    \begin{center}
+        \href{http://www.gatsby.ucl.ac.uk/~rapela/svGPFA/reports/matlabVsPython/figures/lowerBoundVsIterNo.html}{\includegraphics[width=7in]{figures/lowerBoundVsIterNo.png}}
+        \caption{Lower bound versus optimization iteration number. Click on the figure to open the interactive version.}
+        \label{fig:lowerBoundVsIterNo}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+        \href{http://www.gatsby.ucl.ac.uk/~rapela/svGPFA/reports/matlabVsPython/figures/lowerBoundVsRuntime.html}{\includegraphics[width=7in]{figures/lowerBoundVsRuntime.png}}
+        \caption{Lower bound versus optimization elapsed time. Click on the figure to open the interactive version.}
+        \label{fig:lowerBoundVsRuntime}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+        \href{http://www.gatsby.ucl.ac.uk/~rapela/svGPFA/reports/matlabVsPython/figures/truePythonMatlabLatentsPointProcess_trial0.html}{\includegraphics[width=7in]{figures/truePythonMatlabLatentsPointProcess_trial0.png}}
+        \caption{Matlab, Python and true latent variables for trial 0. Click on the figure to open the interactive version.}
+        \label{fig:latentsTrial0}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+        \href{http://www.gatsby.ucl.ac.uk/~rapela/svGPFA/reports/matlabVsPython/figures/truePythonMatlabLatentsPointProcess_trial1.html}{\includegraphics[width=7in]{figures/truePythonMatlabLatentsPointProcess_trial1.png}}
+        \caption{Matlab, Python and true latent variables for trial 1. Click on the figure to open the interactive version.}
+        \label{fig:latentsTrial1}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+        \href{http://www.gatsby.ucl.ac.uk/~rapela/svGPFA/reports/matlabVsPython/figures/truePythonMatlabLatentsPointProcess_trial2.html}{\includegraphics[width=7in]{figures/truePythonMatlabLatentsPointProcess_trial2.png}}
+        \caption{Matlab, Python and true latent variables for trial 2. Click on the figure to open the interactive version.}
+        \label{fig:latentsTrial2}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+        \href{http://www.gatsby.ucl.ac.uk/~rapela/svGPFA/reports/matlabVsPython/figures/truePythonMatlabLatentsPointProcess_trial3.html}{\includegraphics[width=7in]{figures/truePythonMatlabLatentsPointProcess_trial3.png}}
+        \caption{Matlab, Python and true latent variables for trial 3. Click on the figure to open the interactive version.}
+        \label{fig:latentsTrial3}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+        \href{http://www.gatsby.ucl.ac.uk/~rapela/svGPFA/reports/matlabVsPython/figures/truePythonMatlabLatentsPointProcess_trial4.html}{\includegraphics[width=7in]{figures/truePythonMatlabLatentsPointProcess_trial4.png}}
+        \caption{Matlab, Python and true latent variables for trial 4. Click on the figure to open the interactive version.}
+        \label{fig:latentsTrial4}
+    \end{center}
+\end{figure}
+
+\end{comment}
+
+\end{document}

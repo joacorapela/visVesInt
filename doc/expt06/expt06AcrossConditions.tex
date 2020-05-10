@@ -1,0 +1,31 @@
+
+\def\exptN{06}
+\newdimen\figsWidth
+\figsWidth=6in
+
+\documentclass[12 pt]{article}  %
+
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage[hypertexnames=true,colorlinks=true,breaklinks]{hyperref}
+\usepackage{grffile}
+
+\title{Kalman Filter Analysis for Experiment {\exptN} across conditions}
+
+\author{Joaquin Rapela}
+
+\begin{document}
+
+\maketitle
+
+\listoffigures
+
+\begin{figure}
+    \begin{center}
+            \href{http://www.gatsby.ucl.ac.uk/~rapela/sepi/reports/kfAnalysis/figures/expt\exptN/expt\exptN _MARSS_conditionsNMSE.html}{\includegraphics[width=\figsWidth]{../../scripts/figures/expt\exptN/expt\exptN _MARSS_conditionsNMSE.png}}
+            \caption{Normalized MSE of predictions across conditions.}
+        \label{fig:nmses}
+    \end{center}
+\end{figure}
+
+\end{document}
