@@ -1,7 +1,7 @@
 *~
-results/*
-figures/*
-old/*
+scripts/results/*
+scripts/figures/*
+scripts/old/*
 .RData
 .Rhistory
 todo.txt
