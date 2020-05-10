@@ -10,17 +10,17 @@ source("../src/plot/kalmanFilter/getPlotTrueInitialAndEstimatedVectors.R")
 source("../src/utils/plot/circleFun.R")
 
 processAll <- function() {
-    dimLat <- 8
+    dimLat <- 5
     sRate <- 10
     stateInputMemorySecs <- NaN
-    obsInputMemorySecs <- 0.1
+    obsInputMemorySecs <- 0.2
     exptN <- 6
     cellN <- NA
     trialN <- NA
     # condition <- NA
-    condition <- "Visual + Vestibular"
+    # condition <- "Visual + Vestibular"
     # condition <- "Visual"
-    # condition <- "Vestibular"
+    condition <- "Vestibular"
     region <- NA
     # region <- c("RSPg")
     layer <- NA
@@ -53,78 +53,80 @@ processAll <- function() {
 
     # begin plot true params
 
-    APNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "A", "png")
-    AHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "A", "html")
-    p <- getPlotTrueInitialAndEstimatedMatrices(initial=initialConds$A, estimated=matrix(coef(kem)$B, nrow=dimLat), title="A")
-    ggsave(plot=p, filename=APNGFilename)
+    BPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "B", "png")
+    BHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "B", "html")
+    p <- getPlotTrueInitialAndEstimatedMatrices(initial=initialConds$A, estimated=matrix(coef(kem)$B, nrow=dimLat))
+    ggsave(plot=p, filename=BPNGFilename)
     pPlotly <- ggplotly(p)
-    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(AHTMLFilename)), basename(AHTMLFilename)))
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(BHTMLFilename)), basename(BHTMLFilename)))
     #
     uPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "u", "png")
     uHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "u", "html")
-    p <- getPlotTrueInitialAndEstimatedVectors(estimated=matrix(coef(kem)$U, nrow=dimLat), title="u", xlab="Latent Index")
+    p <- getPlotTrueInitialAndEstimatedVectors(estimated=matrix(coef(kem)$U, nrow=dimLat), xlab="Latent Index")
     ggsave(plot=p, filename=uPNGFilename)
     pPlotly <- ggplotly(p)
     htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(uHTMLFilename)), basename(uHTMLFilename)))
     #
-    CPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "C", "png")
-    CHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "C", "html")
-    p <- getPlotTrueInitialAndEstimatedMatrices(initial=t(initialConds$C), estimated=t(matrix(coef(kem)$Z, nrow=dimObs)), title="C", xlab="Latent Index")
-    ggsave(plot=p, filename=CPNGFilename)
+    QPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Q", "png")
+    QHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Q", "html")
+    p <- getPlotTrueInitialAndEstimatedVectors(estimated=coef(kem)$Q)
+    ggsave(plot=p, filename=QPNGFilename)
     pPlotly <- ggplotly(p)
-    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(CHTMLFilename)), basename(CHTMLFilename)))
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(QHTMLFilename)), basename(QHTMLFilename)))
+    #
+    ZPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Z", "png")
+    ZHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Z", "html")
+    p <- getPlotTrueInitialAndEstimatedMatrices(initial=t(initialConds$C), estimated=t(matrix(coef(kem)$Z, nrow=dimObs)), xlab="Latent Index")
+    ggsave(plot=p, filename=ZPNGFilename)
+    pPlotly <- ggplotly(p)
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(ZHTMLFilename)), basename(ZHTMLFilename)))
     #
     aPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "a", "png")
     aHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "a", "html")
-    p <- getPlotTrueInitialAndEstimatedVectors(estimated=matrix(coef(kem)$A, nrow=dimObs), title="a", xlab="Neuron Index")
+    p <- getPlotTrueInitialAndEstimatedVectors(estimated=matrix(coef(kem)$A, nrow=dimObs), xlab="Neuron Index")
     ggsave(plot=p, filename=aPNGFilename)
     pPlotly <- ggplotly(p)
     htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(aHTMLFilename)), basename(aHTMLFilename)))
     #
-    GammaPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Gamma", "png")
-    GammaHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Gamma", "html")
-    p <- getPlotTrueInitialAndEstimatedVectors(estimated=coef(kem)$Q, title="Gamma Variance")
-    ggsave(plot=p, filename=GammaPNGFilename)
-    pPlotly <- ggplotly(p)
-    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(GammaHTMLFilename)), basename(GammaHTMLFilename)))
+    if(!is.nan(stateInputMemorySecs)) {
+        CPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "C", "png")
+        CHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "C", "html")
+        p <- getPlotTrueInitialAndEstimatedMatrices(estimated=t(matrix(coef(kem)$C), nrow=dimObs))
+        ggsave(plot=p, filename=CPNGFilename)
+        pPlotly <- ggplotly(p)
+        htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(CHTMLFilename)), basename(CHTMLFilename)))
+    }
     #
-    SigmaPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Sigma", "png")
-    SigmaHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Sigma", "html")
-    p <- getPlotTrueInitialAndEstimatedVectors(initial=initialConds$sigmaDiag, estimated=coef(kem)$R, title="Sigma Diagonal")
-    ggsave(plot=p, filename=SigmaPNGFilename)
+    if(!is.nan(obsInputMemorySecs)) {
+        DPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "D", "png")
+        DHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "D", "html")
+        p <- getPlotTrueInitialAndEstimatedMatrices(estimated=t(matrix(coef(kem)$D, nrow=dimObs)))
+        ggsave(plot=p, filename=DPNGFilename)
+        pPlotly <- ggplotly(p)
+        htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(DHTMLFilename)), basename(DHTMLFilename)))
+    }
+    #
+    RPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "R", "png")
+    RHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "R", "html")
+    p <- getPlotTrueInitialAndEstimatedVectors(initial=initialConds$sigmaDiag, estimated=coef(kem)$R)
+    ggsave(plot=p, filename=RPNGFilename)
     pPlotly <- ggplotly(p)
-    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(SigmaHTMLFilename)), basename(SigmaHTMLFilename)))
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(RHTMLFilename)), basename(RHTMLFilename)))
     #
     x0PNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "x0", "png")
     x0HTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "x0", "html")
-    p <- getPlotTrueInitialAndEstimatedVectors(estimated=coef(kem)$x0, title="x0", xlab="Latent Index")
+    p <- getPlotTrueInitialAndEstimatedVectors(estimated=coef(kem)$x0, xlab="Latent Index")
     ggsave(plot=p, filename=x0PNGFilename)
     pPlotly <- ggplotly(p)
     htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(x0HTMLFilename)), basename(x0HTMLFilename)))
     #
     V0PNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "V0", "png")
     V0HTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "V0", "html")
-    p <- getPlotTrueInitialAndEstimatedVectors(estimated=coef(kem)$V0, title="V0")
+    p <- getPlotTrueInitialAndEstimatedVectors(estimated=coef(kem)$V0)
     ggsave(plot=p, filename=V0PNGFilename)
     pPlotly <- ggplotly(p)
     htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(V0HTMLFilename)), basename(V0HTMLFilename)))
     #
-    if(!is.nan(stateInputMemorySecs)) {
-        CInputPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "CInput", "png")
-        CInputHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "CInput", "html")
-        p <- getPlotTrueInitialAndEstimatedMatrices(estimated=t(matrix(coef(kem)$C), nrow=dimObs), title="C Input")
-        ggsave(plot=p, filename=CInputPNGFilename)
-        pPlotly <- ggplotly(p)
-        htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(CInputHTMLFilename)), basename(CInputHTMLFilename)))
-    }
-    if(!is.nan(obsInputMemorySecs)) {
-        DInputPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "DInput", "png")
-        DInputHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "DInput", "html")
-        p <- getPlotTrueInitialAndEstimatedMatrices(estimated=t(matrix(coef(kem)$D, nrow=dimObs)), title="D Input")
-        ggsave(plot=p, filename=DInputPNGFilename)
-        pPlotly <- ggplotly(p)
-        htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(DInputHTMLFilename)), basename(DInputHTMLFilename)))
-    }
     # end plot true params
 
     # begin plot state dynamics spectrum
@@ -140,11 +142,11 @@ processAll <- function() {
     p <- p + xlab("Real")
     p <- p + ylab("Imaginary")
     p <- p + theme(legend.title = element_blank())
-    AeigenPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Aeigen", "png")
-    AeigenHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Aeigen", "html")
-    ggsave(plot=p, filename=AeigenPNGFilename)
+    BeigenPNGFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Beigen", "png")
+    BeigenHTMLFilename <- sprintf(figFilenamePattern, exptN, exptN, conditionNoBlanks, dimLat, stateInputMemorySecs, obsInputMemorySecs, "Beigen", "html")
+    ggsave(plot=p, filename=BeigenPNGFilename)
     pPlotly <- ggplotly(p)
-    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(AeigenHTMLFilename)), basename(AeigenHTMLFilename)))
+    htmlwidgets::saveWidget(as_widget(pPlotly), file.path(normalizePath(dirname(BeigenHTMLFilename)), basename(BeigenHTMLFilename)))
     # end plot state dynamics spectrum
 
     # begin plot predicted observations
